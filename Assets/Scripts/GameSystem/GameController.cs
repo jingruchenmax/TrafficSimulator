@@ -4,6 +4,31 @@ using UnityEngine;
 using System;
 using UnityEngine.UI;
 
+public enum Season
+{
+    Spring, //March, April, May
+    Summer, //June, July, August
+    Fall, //September, October, November
+    Winter //December, January, February
+           //reference : https://weatherspark.com/h/s/26327/2020/0/Historical-Weather-Spring-2020-in-Worcester-Massachusetts-United-States
+}
+
+public enum Weather
+{
+    Sunny,
+    Cloudy,
+    Windy,
+    Rainy,
+    Snowy
+}
+
+public enum Tempurature
+{
+    Hot,
+    Warm,
+    Cold,
+    Freezing
+}
 public class GameController : MonoBehaviour
 {
     //Date Time System
@@ -18,34 +43,11 @@ public class GameController : MonoBehaviour
     public Text currentSeasonInString;
     public Text currentWeatherInString;
     public Text currentTempuratureInString;
+
     Season currentSeason;
     Weather currentWeather;
     Tempurature currentTempurature;
-    enum Season
-    {
-        Spring, //March, April, May
-        Summer, //June, July, August
-        Fall, //September, October, November
-        Winter //December, January, February
-               //reference : https://weatherspark.com/h/s/26327/2020/0/Historical-Weather-Spring-2020-in-Worcester-Massachusetts-United-States
-    }
-
-    enum Weather
-    {
-        Sunny,
-        Cloudy,
-        Windy,
-        Rainy,
-        Snowy
-    }
-
-    enum Tempurature
-    {
-        Hot,
-        Warm,
-        Cold,
-        Freezing
-    }
+    
 
     List<Weather> weatherLoot;
     List<Tempurature> tempuratureLoot;
@@ -60,10 +62,35 @@ public class GameController : MonoBehaviour
     int[] fallTempuratureLoot = { 0,0,0,1,1,1,2,2,3,3};
     int[] winterTempuratureLoot = {1,2,3,3,3,3,3,3,3};
 
+
+    //Passenger System
+    int totalPassenger = 0;
+    int currentPassenger = 0;
+    public Text currentPassengerInString;
+    public Text totalPassengerInString;
+    Passenger passenger;
+
+    //Fare System
+    float totalFare = 0f;
+    float currentFare = 0f;
+    float operationCost = 0f;
+    float profit = 0f;
+    public Text currentFareInString;
+    public Text totalFareInString;
+    public Text operationCostInString;
+    public Text profitInString;
+    Fare fare;
+
+
     // Start is called before the first frame update
     void Start()
     {
         currentDate = DateTime.Parse("2021-Jan-01");
+        passenger = GetComponent<Passenger>();
+        totalPassenger = 0;
+        fare = GetComponent<Fare>();
+        totalFare = 0;
+        profit = 0;
     }
 
     void StartNewDay()
@@ -100,12 +127,30 @@ public class GameController : MonoBehaviour
         currentWeatherInString.text = currentWeather.ToString();
         currentTempuratureInString.text = currentTempurature.ToString();
 
+        currentPassenger = passenger.PassengerCalculator(currentDate,currentSeason,currentWeather,currentTempurature);
+        totalPassenger += currentPassenger;
+        currentPassengerInString.text = currentPassenger.ToString();
+        totalPassengerInString.text = totalPassenger.ToString();
+
+        currentFare = fare.FareCalculator(currentPassenger);
+        totalFare += currentFare;
+        if(currentDate.Day == 2)
+        {
+            operationCost += fare.operationCostPerMonth;
+            profit -= operationCost;
+        }
+        profit += currentFare;
+        currentFareInString.text = currentFare.ToString();
+        totalFareInString.text = totalFare.ToString();
+        operationCostInString.text = operationCost.ToString();
+        profitInString.text = profit.ToString();
     }
 
     // Update is called once per frame
     void LateUpdate()
     {
         daypass += Time.deltaTime;
+        
         if (daypass >= runSpeed)
         {
             StartNewDay();
